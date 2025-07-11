@@ -17,6 +17,8 @@ work:
 	$(EKMP) \
 		serve \
 		--work-dir ../ \
+		--theme-dir $(DEV_THEME_DIR) \
+		--theme-dev \
 		--theme youlog
 
 preview:
