@@ -1,0 +1,41 @@
+config:
+  site:
+    name: 有啥社区
+    description: 有啥社区，一个分享有趣想法、创意和建设性讨论的社区。
+    keywords: 有啥, yousha, yousha-support, 有啥社区
+    beian: 
+  page_size: 12
+  default_lang: zh_CN
+
+  # 版权信息
+  copyright:
+    # from_year: 2021
+    text: 有啥
+    link: https://yousha.top
+
+  # 评论
+  yousha:
+    community: yousha-support
+  
+  # 备案信息
+  # beian:
+  #   - text: 苏ICP备2025000000号-1
+  #     link: https://beian.miit.gov.cn/
+
+  algolia_search:
+    app_id: 1N74YC70XF
+    api_key: 95bb37e3122ee9cb57a8ee0abbd14409
+    index_name: yousha_top
+    site: yousha.top
+
+  header_nav:
+    - title: 社区首页
+      url: https://yousha.top
+      
+
+  bottom_nav:
+    - title: Everkm
+      url: https://www.everkm.cn
+      new_window: true
+    - title: Youlog
+      url: https://youlog.cn

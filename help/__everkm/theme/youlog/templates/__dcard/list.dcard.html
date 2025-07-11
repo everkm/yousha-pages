@@ -1,0 +1,76 @@
+{% set items = posts(dir=dir, recursive=include_subfolders | default(value=true), exclude_tags=exclude_tags | default(value=[])) %}
+{% set page_no =__qs.page | default(value=1) | int %}
+{% set page_size = page_size | default(value=6) %}
+{% set start = (page_no - 1) * page_size %}
+{% set end = start + page_size %}
+{% set page_count = items | length / page_size %}
+{% set page_count = page_count | round(method="ceil") %}
+<ol>
+    {% for doc in items | slice(start=start, end=end) %}
+    <li>
+        <a href="{{ doc.url_path | safe }}?path={{doc.path|urlencode_strict}}" target="_blank">{{doc.title}}</a>
+        {%if doc.weight > 0%}<span class="!text-red-500 mark-top"></span>{%endif%}
+        <div class="text-gray-500 dark:text-gray-400 font-light text-[90%] number">
+            {{doc.update_at | date(format=config(key="date_format", default="%Y-%m-%d %H:%M"))}}
+            {% if doc.date != doc.update_at %}<em class="text-gray-500 text-[90%]">{{t(text="updated")}}</em>{% endif %}
+        </div>
+    </li>
+    {% endfor %}
+</ol>
+
+{% if page_count > 1 %}
+<div class="space-x-6 flex !mt-10 text-normal items-center justify-center">
+    {% if page_no > 1 %}
+    <div class="flex items-center space-x-1">
+        {% if page_no == 2 %}
+        <a href="{{__page_path_base}}.html?{{page_query(page=1)}}" class="flex items-center gap-0.5">
+            {{t(text="common: Prev page")}}
+        </a>
+        {% elif page_no > 2 %}
+        <a href="{{__page_path_base}}.p{{page_no-1}}.html?{{page_query(page=page_no-1)}}"
+            class="flex items-center gap-0.5">
+            {{t(text="common: Prev page")}}
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {# 跳转分页 #}
+    <div x-data="{
+    currentPage: {{ page_no }},
+    totalPages: {{ page_count }},
+    baseUrl: '{{ __page_path_base }}',
+    pageQuery: '{% if __env_is_preview %}?{{ page_query(page=1) }}{% endif %}',
+    goToPage() {
+      const page = parseInt(this.currentPage);
+      if (page >= 1 && page <= this.totalPages) {
+        let url;
+        if (page === 1) {
+          url = this.baseUrl + '.html' + this.pageQuery.replace('page=1', 'page=' + page);
+        } else {
+          url = this.baseUrl + '.p' + page + '.html' + this.pageQuery.replace('page=1', 'page=' + page);
+        }
+        window.dispatchEvent(new CustomEvent('page-navigate', { detail: { url } }));
+      }
+    }
+  }" x-init="currentPage = {{ page_no }}">
+        <select x-model="currentPage" @change="goToPage()"
+            class="text-gray-600 text-sm rounded pl-1 py-1 hover:bg-gray-100 dark:bg-gray-900 dark:hover:bg-gray-800 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            <template x-for="page in totalPages" :key="page">
+                <option :value="page" :selected="page === {{ page_no }}" x-text="page + ' / ' + totalPages"></option>
+            </template>
+        </select>
+    </div>
+
+    {% if items | length > end %}
+    <div class="flex items-center space-x-1">
+        <a href="{{__page_path_base}}.p{{page_no+1}}.html?{{page_query(page=page_no+1)}}"
+            class="flex items-center gap-0.5">
+            {{t(text="common: Next page")}}
+        </a>
+    </div>
+    {% endif %}
+
+
+</div>
+{% endif %}

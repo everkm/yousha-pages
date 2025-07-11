@@ -1,0 +1,9 @@
+{
+  "redirects": [
+    {
+      "source": "/abox",
+      "destination": "https://abox.co",
+      "permanent": true
+    }
+  ]
+}
