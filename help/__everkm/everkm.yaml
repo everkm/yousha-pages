@@ -25,8 +25,8 @@ config:
   algolia_search:
     app_id: 1N74YC70XF
     api_key: 95bb37e3122ee9cb57a8ee0abbd14409
-    index_name: yousha_top
-    site: yousha.top
+    index_name: yousha
+    site: help.yousha.top
 
   header_nav:
     - title: 社区首页
