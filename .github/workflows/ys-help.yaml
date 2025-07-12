@@ -47,13 +47,16 @@ jobs:
 
     - name: dist
       run: |
-        echo "${{ secrets.SSH_KEY_DEPLOY_ED25519 }}" > ~/id_rsa_daobox && chmod 600 ~/id_rsa_daobox
+        # 准备 .ssh 目录
+        mkdir -p ~/.ssh
+        chmod 700 ~/.ssh
+
+        # 配置 ssh 私钥
+        echo "${{ secrets.SSH_KEY_DEPLOY_ED25519 }}" > ~/.ssh/id_rsa_daobox && chmod 600 ~/.ssh/id_rsa_daobox
         export QINIU_ACCESS_KEY=${{ secrets.QINIU_ACCESS_KEY }}
         export QINIU_SECRET_KEY=${{ secrets.QINIU_SECRET_KEY }}
 
-        # 配置 ssh 密钥
-        mkdir -p ~/.ssh
-        chmod 700 ~/.ssh
+        # 配置 known_hosts
         touch ~/.ssh/known_hosts
         chmod 600 ~/.ssh/known_hosts
         echo "${{ secrets.Y7_EVERKM_COM_HOST_KEY }}" >> ~/.ssh/known_hosts
