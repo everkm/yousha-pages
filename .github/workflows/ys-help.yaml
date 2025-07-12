@@ -65,6 +65,7 @@ jobs:
 
         # 上传静态文件
         rsync \
+          -e "ssh -i ~/.ssh/id_rsa_daobox -p 11022" \
           --recursive \
           --verbose \
           --checksum \
