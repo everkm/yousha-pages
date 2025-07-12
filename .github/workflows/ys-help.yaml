@@ -47,36 +47,56 @@ jobs:
 
     - name: dist
       run: |
-        cd packages/thc-www/__everkm 
-        echo "${{ secrets.SSH_PRIVATE_KEY_LOCAL }}" > id_rsa_daobox
-        chmod 0600 id_rsa_daobox
+        echo "${{ secrets.SSH_KEY_DEPLOY_ED25519 }}" > ~/id_rsa_daobox && chmod 600 ~/id_rsa_daobox
+        export QINIU_ACCESS_KEY=${{ secrets.QINIU_ACCESS_KEY }}
+        export QINIU_SECRET_KEY=${{ secrets.QINIU_SECRET_KEY }}
+
+        # 配置 ssh 密钥
+        mkdir -p ~/.ssh
+        chmod 700 ~/.ssh
+        touch ~/.ssh/known_hosts
+        chmod 600 ~/.ssh/known_hosts
+        echo "${{ secrets.Y7_EVERKM_COM_HOST_KEY }}" >> ~/.ssh/known_hosts
+
+        
+        # 安装依赖 并生成静态文件
+        cd help/__everkm 
         pnpm i && make dist
-        mv dist thc-www_next
-        tar zcvf thc-www_next.tar.gz thc-www_next
-        scp -o StrictHostKeyChecking=no -i id_rsa_daobox -P 11022 thc-www_next.tar.gz root@y5.everkm.com:/data/www/
-        ssh -o StrictHostKeyChecking=no -i id_rsa_daobox -p 11022 root@y5.everkm.com <<EOF
+
+        # 上传静态文件
+        rsync \
+          --recursive \
+          --verbose \
+          --checksum \
+          --delete \
+          --compress \
+          --links \
+          --delete-after \
+          --exclude=*.sh \
+          ./dist/. \
+          root@y7.everkm.com:/data/www/help.yousha.top-next/
+
+        # 同步静态文件至生产目录
+        ssh -i ~/.ssh/id_rsa_daobox -p 11022 root@y7.everkm.com <<EOF
           cd /data/www/
-          tar zxvf thc-www_next.tar.gz
           rsync \
             --recursive \
             --verbose \
             --checksum \
             --delete \
-            --compress \
             --links \
             --delete-after \
             --exclude=*.sh \
-            ./thc-www_next/youlog/ \
-            ./thc-www/youlog/
-          rm -rf thc-www_next*
+            ./help.yousha.top-next/ \
+            ./help.yousha.top/
         EOF
 
     - name: push search index
       run: |
-        cd packages/thc-www/__everkm
+        cd help/__everkm
         pnpm i
         export ALGOLIA_APP_ID="${{ secrets.ALGOLIA_APP_ID }}"
         export ALGOLIA_API_KEY="${{ secrets.ALGOLIA_API_KEY }}"
-        ./node_modules/.bin/ekmp-algolia --index-name tehaochi reset --languages zh --languages en --channel youlog --site tehaochi.cn
-        ./node_modules/.bin/ekmp-algolia --index-name tehaochi walk --url-base https://tehaochi.cn/youlog/ --body-selector "#article-main" --channel youlog --site tehaochi.cn --dir thc-www_next/youlog
+        ./node_modules/.bin/ekmp-algolia --index-name yousha reset --languages zh --languages en --channel help --site help.yousha.top
+        ./node_modules/.bin/ekmp-algolia --index-name yousha walk --url-base https://help.yousha.top/ --body-selector "#article-main" --channel help --site help.yousha.top --dir dist/
 
